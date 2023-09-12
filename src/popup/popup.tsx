@@ -1,16 +1,66 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import "fontsource-roboto";
 import "./popup.css";
 import WeatherCard from "./WeatherCard";
+import { Box, InputBase, Paper, IconButton, Grid } from "@mui/material";
+import { Add } from "@mui/icons-material";
+import { getStoredCities, setStoredCities } from "../utils/storage";
 
 const App: React.FC<{}> = () => {
+  const [cities, setCities] = useState<string[]>([
+    "Portland",
+    "Seattle",
+    "Austin",
+  ]);
+  const [cityInput, setCityInput] = useState<string>("");
+
+  useEffect(() => {
+    getStoredCities().then((cities) => setCities(cities));
+  }, [cities]);
+
+  const handleCityButtonClick = () => {
+    if (cityInput === "") return;
+    const updatedCities = [...cities, cityInput];
+    setStoredCities(updatedCities).then(() => {
+      setCities(updatedCities);
+      setCityInput("");
+    });
+  };
+
+  const handleCityDeleteButtonClick = (index: number) => {
+    cities.splice(index, 1);
+    const updatedCities = [...cities];
+    setStoredCities(updatedCities).then(() => setCities(updatedCities));
+  };
+
   return (
-    <div className="popup">
-      <WeatherCard city="Portland" />
-      <WeatherCard city="Seattle" />
-      <WeatherCard city="Austin" />
-    </div>
+    <Box mx="8px" my="16px">
+      <Grid container>
+        <Grid item>
+          <Paper>
+            <Box px="15px" py="5px">
+              <InputBase
+                placeholder="Add a city"
+                value={cityInput}
+                onChange={(e) => setCityInput(e.target.value)}
+              />
+              <IconButton onClick={handleCityButtonClick}>
+                <Add />
+              </IconButton>
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
+      {cities.map((city, index) => (
+        <WeatherCard
+          city={city}
+          key={index}
+          onDelete={() => handleCityDeleteButtonClick(index)}
+        />
+      ))}
+      <Box height="16px" />
+    </Box>
   );
 };
 

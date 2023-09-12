@@ -1,5 +1,5 @@
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log(message);
-  console.log(sender);
-  sendResponse("Hello from background script!");
+import { setStoredCities } from "../utils/storage";
+
+chrome.runtime.onInstalled.addListener(() => {
+  setStoredCities([]);
 });
