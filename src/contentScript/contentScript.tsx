@@ -17,12 +17,18 @@ const App: React.FC<{}> = () => {
     });
   }, []);
 
+  const handleMessages = (msg: Messages) => {
+    if (msg === Messages.TOGGLE_OVERLAY) {
+      setIsActive(!isActive);
+    }
+  };
+
   useEffect(() => {
-    chrome.runtime.onMessage.addListener((message) => {
-      if (message === Messages.TOGGLE_OVERLAY) {
-        setIsActive(!isActive);
-      }
-    });
+    chrome.runtime.onMessage.addListener(handleMessages);
+    return () => {
+      // clean up event listener, bug fix from: https://www.udemy.com/course/chrome-extension/learn/#questions/14694484/
+      chrome.runtime.onMessage.removeListener(handleMessages);
+    };
   }, [isActive]);
 
   if (!options) {
