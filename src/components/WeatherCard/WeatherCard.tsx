@@ -8,6 +8,8 @@ import {
   CardActions,
   Button,
 } from "@mui/material";
+import { OpenWeatherTempScale } from "../../utils/api";
+import "./WeatherCard.css";
 
 const WeatherCardContainer: React.FC<{
   children: React.ReactNode;
@@ -20,7 +22,7 @@ const WeatherCardContainer: React.FC<{
         <CardActions>
           {onDelete && (
             <Button color="secondary" onClick={onDelete}>
-              Delete
+              <Typography className="weatherCard-body">Delete</Typography>
             </Button>
           )}
         </CardActions>
@@ -29,31 +31,32 @@ const WeatherCardContainer: React.FC<{
   );
 };
 
-type WeatherCardState = "loading" | "error" | "success";
+type WeatherCardState = "loading" | "error" | "ready";
 
-const WeatherCard: React.FC<{ city: string; onDelete?: () => void }> = ({
-  city,
-  onDelete,
-}) => {
+const WeatherCard: React.FC<{
+  city: string;
+  tempScale: OpenWeatherTempScale;
+  onDelete?: () => void;
+}> = ({ city, onDelete, tempScale }) => {
   const [weatherData, setWeatherData] = useState<OpenWeatherData>();
   const [cardState, setCardState] = useState<WeatherCardState>("loading");
 
   useEffect(() => {
-    fetchOpenWeatherData(city)
+    fetchOpenWeatherData(city, tempScale)
       .then((data) => {
         setWeatherData(data);
-        setCardState("success");
+        setCardState("ready");
       })
-      .catch((err) => {
-        console.error(err);
-        setCardState("error");
-      });
-  }, [city]);
+      .catch((err) => setCardState("error"));
+  }, [city, tempScale]);
 
   if (cardState === "loading" || cardState === "error") {
     return (
       <WeatherCardContainer onDelete={onDelete}>
-        <Typography variant="body1">
+        <Typography variant="h5" className="weatherCard-title">
+          {city}
+        </Typography>
+        <Typography variant="body1" className="weatherCard-body">
           {cardState === "loading"
             ? "Loading..."
             : "Error: could not retrieve weather data for this city"}
@@ -64,11 +67,11 @@ const WeatherCard: React.FC<{ city: string; onDelete?: () => void }> = ({
 
   return (
     <WeatherCardContainer onDelete={onDelete}>
-      <Typography variant="h5">{city}</Typography>
-      <Typography variant="body1">
+      <Typography className="weatherCard-title">{city}</Typography>
+      <Typography className="weatherCard-body">
         {Math.round(weatherData.main.temp)}
       </Typography>
-      <Typography variant="body1">
+      <Typography className="weatherCard-body">
         Feels Like: {Math.round(weatherData.main.feels_like)}
       </Typography>
     </WeatherCardContainer>

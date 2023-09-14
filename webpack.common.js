@@ -8,24 +8,27 @@ module.exports = {
     popup: path.resolve("src/popup/popup.tsx"),
     options: path.resolve("src/options/options.tsx"),
     background: path.resolve("src/background/background.ts"),
-    content: path.resolve("src/contentScript/contentScript.ts"),
+    contentScript: path.resolve("src/contentScript/contentScript.tsx"),
   },
   module: {
     rules: [
       {
-        use: "ts-loader",
         test: /\.tsx?$/,
+        use: "ts-loader",
         exclude: /node_modules/,
       },
       {
+        test: /\.css$/i,
         use: ["style-loader", "css-loader"],
-        test: /\.css$/,
       },
       {
+        test: /\.(jpg|jpeg|png|woff|woff2|eot|ttf|svg)$/,
         type: "asset/resource",
-        test: /\.(png|svg|jpg|jpeg|gif|woff|woff2|eot|ttf)$/i,
       },
     ],
+  },
+  resolve: {
+    extensions: [".tsx", ".ts", ".js"],
   },
   plugins: [
     new CleanWebpackPlugin({
@@ -39,23 +42,22 @@ module.exports = {
         },
       ],
     }),
-    ...getHTMLPlugins(["popup", "options"]),
+    ...getHtmlPlugins(["popup", "options"]),
   ],
-  resolve: {
-    extensions: [".tsx", ".ts", ".js", ".jsx"],
-  },
   output: {
     filename: "[name].js",
     path: path.resolve("dist"),
   },
   optimization: {
     splitChunks: {
-      chunks: "all",
+      chunks(chunk) {
+        return chunk.name !== "contentScript";
+      },
     },
   },
 };
 
-function getHTMLPlugins(chunks) {
+function getHtmlPlugins(chunks) {
   return chunks.map(
     (chunk) =>
       new HtmlPlugin({
